@@ -1,0 +1,77 @@
+<svg viewBox="0 0 900 640" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <title>Hexagonal architecture: domain, application, infrastructure layers and adapters</title>
+
+  <defs>
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#6b6a66" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#b6791a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="640" fill="#ffffff"/>
+
+  <!-- Outer hexagon: infrastructure -->
+  <polygon points="450,60 660,175 660,405 450,520 240,405 240,175"
+           fill="#f3f1ec" stroke="#8a8a86" stroke-width="1.5"/>
+  <!-- Middle hexagon: application -->
+  <polygon points="450,150 570,217 570,363 450,430 330,363 330,217"
+           fill="#e3f1ee" stroke="#4d8c82" stroke-width="1.5"/>
+  <!-- Inner hexagon: domain -->
+  <polygon points="450,230 509,265 509,315 450,350 391,315 391,265"
+           fill="#efeaf6" stroke="#7c5fb0" stroke-width="1.5"/>
+
+  <!-- Layer labels -->
+  <text x="450" y="95" text-anchor="middle" font-size="15" font-weight="600" fill="#4a4a46">INFRASTRUCTURE</text>
+  <text x="450" y="113" text-anchor="middle" font-size="11.5" fill="#6b6a66">adapters — Spring, WebClient, Caffeine, Resilience4j</text>
+
+  <text x="450" y="182" text-anchor="middle" font-size="14" font-weight="600" fill="#2f6459">APPLICATION</text>
+  <text x="450" y="198" text-anchor="middle" font-size="10.5" fill="#3f7a6f">ports (in/out) + use case — framework-free</text>
+
+  <text x="450" y="288" text-anchor="middle" font-size="13" font-weight="600" fill="#5b3d99">DOMAIN</text>
+  <text x="450" y="303" text-anchor="middle" font-size="10" fill="#6d4fae">Product · ProductId</text>
+
+  <!-- Dependency arrows: infra -> application -> domain, drawn along the lower-right gap -->
+  <line x1="565" y1="392" x2="520" y2="357" stroke="#6b6a66" stroke-width="1.6" marker-end="url(#arrowGray)"/>
+  <text x="600" y="380" font-size="10.5" fill="#6b6a66" text-anchor="middle" transform="rotate(-33 600 380)">depends on</text>
+
+  <line x1="500" y1="335" x2="470" y2="318" stroke="#4d8c82" stroke-width="1.6" marker-end="url(#arrowGray)"/>
+  <text x="522" y="330" font-size="10" fill="#4d8c82" text-anchor="middle" transform="rotate(-33 522 330)">depends on</text>
+
+  <!-- Adapter boxes plugged into the outer hexagon -->
+  <!-- Web controller (top-left) -->
+  <rect x="40" y="70" width="180" height="56" rx="9" fill="#ffffff" stroke="#8a8a86" stroke-width="1.2"/>
+  <text x="130" y="93" text-anchor="middle" font-size="12" font-weight="600" fill="#33322e">Web Controller</text>
+  <text x="130" y="109" text-anchor="middle" font-size="10" fill="#6b6a66">inbound REST · exception handler</text>
+  <line x1="220" y1="98" x2="290" y2="150" stroke="#8a8a86" stroke-width="1.3" marker-end="url(#arrowGray)"/>
+
+  <!-- ProductApiClient (top-right) -->
+  <rect x="680" y="70" width="180" height="56" rx="9" fill="#ffffff" stroke="#8a8a86" stroke-width="1.2"/>
+  <text x="770" y="93" text-anchor="middle" font-size="12" font-weight="600" fill="#33322e">ProductApiClient</text>
+  <text x="770" y="109" text-anchor="middle" font-size="10" fill="#6b6a66">outbound HTTP · WebClient</text>
+  <line x1="680" y1="98" x2="610" y2="150" stroke="#8a8a86" stroke-width="1.3" marker-end="url(#arrowGray)"/>
+
+  <!-- ReactiveCache (bottom-left) -->
+  <rect x="40" y="450" width="180" height="56" rx="9" fill="#ffffff" stroke="#8a8a86" stroke-width="1.2"/>
+  <text x="130" y="473" text-anchor="middle" font-size="12" font-weight="600" fill="#33322e">ReactiveCache</text>
+  <text x="130" y="489" text-anchor="middle" font-size="10" fill="#6b6a66">Caffeine AsyncCache wrapper</text>
+  <line x1="220" y1="478" x2="290" y2="435" stroke="#8a8a86" stroke-width="1.3" marker-end="url(#arrowGray)"/>
+
+  <!-- ResilienceDecorator (bottom-right) -->
+  <rect x="680" y="450" width="180" height="56" rx="9" fill="#ffffff" stroke="#8a8a86" stroke-width="1.2"/>
+  <text x="770" y="473" text-anchor="middle" font-size="12" font-weight="600" fill="#33322e">ResilienceDecorator</text>
+  <text x="770" y="489" text-anchor="middle" font-size="10" fill="#6b6a66">bulkhead · timeout · breaker · retry</text>
+  <line x1="680" y1="478" x2="610" y2="435" stroke="#8a8a86" stroke-width="1.3" marker-end="url(#arrowGray)"/>
+
+  <!-- config composition root, wiring everything -->
+  <rect x="330" y="565" width="240" height="46" rx="9" fill="#fdf3e3" stroke="#b6791a" stroke-width="1.2"/>
+  <text x="450" y="593" text-anchor="middle" font-size="12" font-weight="600" fill="#8a5b12">config — composition root</text>
+  <line x1="400" y1="565" x2="300" y2="480" stroke="#b6791a" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrowAmber)"/>
+  <line x1="450" y1="565" x2="450" y2="440" stroke="#b6791a" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrowAmber)"/>
+  <line x1="500" y1="565" x2="600" y2="480" stroke="#b6791a" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrowAmber)"/>
+
+  <text x="450" y="630" text-anchor="middle" font-size="11" fill="#6b6a66">
+    Solid arrows: adapters call inward toward the core. Dashed: config wires every layer together.
+  </text>
+</svg>

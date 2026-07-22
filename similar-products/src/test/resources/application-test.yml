@@ -1,0 +1,48 @@
+# Fast, deterministic settings for integration tests.
+product-api:
+  base-url: http://localhost:0            # overridden by @DynamicPropertySource
+  connect-timeout: 200ms
+  response-timeout: 2s
+  call-timeout: 300ms                     # low ceiling so the timeout test is quick
+  max-connections: 50
+  pending-acquire-timeout: 1s
+  concurrency: 10
+
+cache:
+  similar-ids:
+    maximum-size: 1000
+    expire-after-write: 60s
+  product-detail:
+    maximum-size: 1000
+    expire-after-write: 60s
+
+resilience:
+  instances:
+    similar-ids:
+      circuit-breaker:
+        sliding-window-size: 20
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+        slow-call-rate-threshold: 100
+        wait-duration-in-open-state: 5s
+        permitted-calls-in-half-open-state: 3
+      retry:
+        max-attempts: 1                   # no retries so WireMock request counts are exact
+        wait-duration: 10ms
+      bulkhead:
+        max-concurrent-calls: 50
+        max-wait-duration: 0ms
+    product-detail:
+      circuit-breaker:
+        sliding-window-size: 20
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+        slow-call-rate-threshold: 100
+        wait-duration-in-open-state: 5s
+        permitted-calls-in-half-open-state: 3
+      retry:
+        max-attempts: 1
+        wait-duration: 10ms
+      bulkhead:
+        max-concurrent-calls: 50
+        max-wait-duration: 0ms

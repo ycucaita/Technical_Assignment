@@ -1,0 +1,81 @@
+spring:
+  application:
+    name: similar-products
+  jackson:
+    # Satisfies the requirement "if a field is null, don't show it" globally,
+    # and makes id-only degraded products serialise as just {"id": "..."}.
+    default-property-inclusion: non_null
+
+server:
+  port: 5000
+
+# ---- Outbound product API (the two external endpoints live behind this base URL) ----
+product-api:
+  base-url: http://localhost:3001
+  connect-timeout: 500ms          # TCP connect ceiling
+  response-timeout: 2s            # Reactor Netty transport response timeout
+  call-timeout: 3s                # hard per-call ceiling enforced in the resilience pipeline
+  max-connections: 500            # connection pool size (tune for load tests)
+  pending-acquire-timeout: 2s     # fail fast instead of queuing forever under load
+  concurrency: 30                 # max in-flight detail look-ups per request (fan-out)
+
+# ---- Reactive caches (Caffeine, async) ----
+cache:
+  similar-ids:
+    maximum-size: 10000
+    expire-after-write: 60s
+  product-detail:
+    maximum-size: 50000
+    expire-after-write: 60s
+
+# ---- Resilience per outbound dependency ----
+resilience:
+  instances:
+    similar-ids:
+      circuit-breaker:
+        sliding-window-size: 50
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+        slow-call-rate-threshold: 80
+        wait-duration-in-open-state: 10s
+        permitted-calls-in-half-open-state: 5
+      retry:
+        max-attempts: 3
+        wait-duration: 100ms
+      bulkhead:
+        max-concurrent-calls: 100
+        max-wait-duration: 0ms
+    product-detail:
+      circuit-breaker:
+        sliding-window-size: 50
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+        slow-call-rate-threshold: 80
+        wait-duration-in-open-state: 10s
+        permitted-calls-in-half-open-state: 5
+      retry:
+        max-attempts: 3
+        wait-duration: 100ms
+      bulkhead:
+        max-concurrent-calls: 200
+        max-wait-duration: 0ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # CB/retry/bulkhead metrics are published via Micrometer -> /actuator/metrics & /actuator/prometheus
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.example.similarproducts: INFO
+    # Flip to DEBUG to trace every upstream call (outbound GETs) while diagnosing an issue:
+    # com.example.similarproducts.infrastructure.client: DEBUG
